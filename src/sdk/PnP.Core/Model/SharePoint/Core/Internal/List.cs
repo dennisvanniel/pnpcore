@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -1319,7 +1320,7 @@ namespace PnP.Core.Model.SharePoint
 
         public async Task<List<string>> GetContentTypeOrderAsync()
         {
-            await LoadAsync(p => p.ContentTypesEnabled, 
+            await LoadAsync(p => p.ContentTypesEnabled,
                             p => p.RootFolder.QueryProperties(p => p.ContentTypeOrder, p => p.UniqueContentTypeOrder)).ConfigureAwait(false);
 
             if (!ContentTypesEnabled)
@@ -1342,7 +1343,7 @@ namespace PnP.Core.Model.SharePoint
                     contentTypeIdCollection = RootFolder.ContentTypeOrder;
                 }
 
-                foreach(var contentTypeId in contentTypeIdCollection.AsRequested())
+                foreach (var contentTypeId in contentTypeIdCollection.AsRequested())
                 {
                     contentTypeOrder.Add(contentTypeId.StringValue);
                 }
@@ -1355,6 +1356,50 @@ namespace PnP.Core.Model.SharePoint
         {
             return GetContentTypeOrderAsync().GetAwaiter().GetResult();
         }
+        #endregion
+
+        #region Files
+
+        public List<IFile> FindFiles(string match)
+        {
+            return FindFilesAsync(match).GetAwaiter().GetResult();
+        }
+
+        public async Task<List<IFile>> FindFilesAsync(string match)
+        {
+
+            match = WildcardToRegex(match);
+
+            return await ParseFiles(RootFolder, match).ConfigureAwait(false);
+        }
+
+        private static string WildcardToRegex(string pattern)
+        {
+            return "^" + Regex.Escape(pattern).
+                               Replace(@"\*", ".*").
+                               Replace(@"\?", ".") + "$";
+        }
+
+        private async Task<List<IFile>> ParseFiles(IFolder folder, string match)
+        {
+            var foundFiles = new List<IFile>();
+            IFileCollection files = folder.Files;
+
+            foreach (File file in files)
+            {
+                if (Regex.IsMatch(file.Name, match, RegexOptions.IgnoreCase))
+                {
+                    foundFiles.Add(file);
+                }
+            }
+
+            foreach (IFolder subfolder in folder.Folders)
+            {
+                foundFiles.AddRange(await ParseFiles(subfolder, match).ConfigureAwait(false));
+            }
+            return foundFiles;
+        }
+
         #endregion
 
         #endregion

@@ -5,6 +5,7 @@ using PnP.Core.QueryModel;
 using PnP.Core.Test.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -101,7 +102,7 @@ namespace PnP.Core.Test.SharePoint
                     {
                         var list4 = context4.Web.Lists.GetByTitle(listTitle);
                         if (list4 != null)
-                        {                            
+                        {
                             var resultBatch = list4.LoadListDataAsStreamBatch(new RenderListDataOptions() { ViewXml = "<View><ViewFields><FieldRef Name='Title' /></ViewFields><RowLimit>5</RowLimit></View>", RenderOptions = RenderListDataOptionsFlags.ListData }); ;
 
                             Assert.IsFalse(resultBatch.IsAvailable);
@@ -445,7 +446,7 @@ namespace PnP.Core.Test.SharePoint
         public void RewriteQueryStringTest()
         {
             // there are fieldrefs | no * provided in $select
-            var rewrite = List.RewriteGetItemsQueryString("<View><ViewFields><FieldRef Name='Title' /><FieldRef Name='FileRef' /></ViewFields><RowLimit>5</RowLimit></View>", 
+            var rewrite = List.RewriteGetItemsQueryString("<View><ViewFields><FieldRef Name='Title' /><FieldRef Name='FileRef' /></ViewFields><RowLimit>5</RowLimit></View>",
                                                           "https://bertonline.sharepoint.com/sites/prov-2/_api/Web/Lists(guid'3968c1e1-0a86-40db-95f8-614e53888609')/GetItems?$select=Id,RoleAssignments/PrincipalId&$expand=RoleAssignments,RoleAssignments/RoleDefinitionBindings");
 
             Assert.AreEqual(rewrite.ToLower(), "https://bertonline.sharepoint.com/sites/prov-2/_api/Web/Lists(guid'3968c1e1-0a86-40db-95f8-614e53888609')/GetItems?$select=Id,RoleAssignments/PrincipalId,*,Title,FileRef&$expand=RoleAssignments,RoleAssignments/RoleDefinitionBindings".ToLower());
@@ -526,8 +527,8 @@ namespace PnP.Core.Test.SharePoint
                             list2.LoadItemsByCamlQuery(query: null);
                         });
 
-                        list2.LoadItemsByCamlQuery("<View><ViewFields><FieldRef Name='Title' /><FieldRef Name='FileRef' /></ViewFields><RowLimit>5</RowLimit></View>", 
-                            p=>p.RoleAssignments.QueryProperties(p=>p.PrincipalId, p=>p.RoleDefinitions));
+                        list2.LoadItemsByCamlQuery("<View><ViewFields><FieldRef Name='Title' /><FieldRef Name='FileRef' /></ViewFields><RowLimit>5</RowLimit></View>",
+                            p => p.RoleAssignments.QueryProperties(p => p.PrincipalId, p => p.RoleDefinitions));
                         Assert.IsTrue(list2.Items.Length == 5);
                         var first = list2.Items.AsRequested().First();
                         Assert.IsTrue(first["FileRef"] != null && !string.IsNullOrEmpty(first["FileRef"].ToString()));
@@ -1066,8 +1067,8 @@ namespace PnP.Core.Test.SharePoint
             //TestCommon.Instance.Mocking = false;
             using (var context = await TestCommon.Instance.GetContextAsync(TestCommon.TestSite))
             {
-                var list = await context.Web.Lists.GetByServerRelativeUrlAsync($"{context.Uri.LocalPath}/shared%20documents", p => p.IsApplicationList, 
-                    p => p.IsCatalog, p=>p.IsDefaultDocumentLibrary, p => p.IsPrivate, p => p.IsSiteAssetsLibrary, p => p.IsSystemList,
+                var list = await context.Web.Lists.GetByServerRelativeUrlAsync($"{context.Uri.LocalPath}/shared%20documents", p => p.IsApplicationList,
+                    p => p.IsCatalog, p => p.IsDefaultDocumentLibrary, p => p.IsPrivate, p => p.IsSiteAssetsLibrary, p => p.IsSystemList,
                     p => p.Created, p => p.LastItemDeletedDate, p => p.LastItemModifiedDate, p => p.LastItemUserModifiedDate);
 
                 Assert.IsTrue(list.Requested);
@@ -1391,7 +1392,7 @@ namespace PnP.Core.Test.SharePoint
                 Assert.IsTrue(changes.Count > 0);
 
                 var list2 = await context.Web.Lists.GetByTitleAsync("Site Assets", p => p.Id);
-                
+
                 var changesBatch = list.GetChangesBatch(new ChangeQueryOptions(true, true)
                 {
                     FetchLimit = 5,
@@ -1546,7 +1547,7 @@ namespace PnP.Core.Test.SharePoint
             {
                 var assetLibrary = context.Web.Lists.EnsureSiteAssetsLibrary();
 
-                Assert.IsNotNull(assetLibrary);    
+                Assert.IsNotNull(assetLibrary);
                 Assert.IsTrue(assetLibrary.Id != Guid.Empty);
 
 
@@ -1600,7 +1601,7 @@ namespace PnP.Core.Test.SharePoint
                 var complianceTag = myList.GetComplianceTag();
 
                 Assert.IsTrue(complianceTag != null);
-                
+
                 var complianceTagViaBatch = myList.GetComplianceTagBatch();
                 Assert.IsFalse(complianceTagViaBatch.IsAvailable);
 
@@ -1611,6 +1612,72 @@ namespace PnP.Core.Test.SharePoint
 
                 await myList.DeleteAsync();
             }
+        }
+
+        [TestMethod]
+        public async Task FindFilesInRootFolder()
+        {
+            TestCommon.Instance.Mocking = false;
+
+            using (var context = await TestCommon.Instance.GetContextAsync(TestCommon.TestSite))
+            {
+                // Create a new list
+                string listTitle = TestCommon.GetPnPSdkTestAssetName("FindFilesTest");
+                var myList = context.Web.Lists.GetByTitle(listTitle);
+
+                if (TestCommon.Instance.Mocking && myList != null)
+                {
+                    Assert.Inconclusive("Test data set should be setup to not have the list available.");
+                }
+
+                if (myList == null)
+                {
+                    myList = await context.Web.Lists.AddAsync(listTitle, ListTemplateType.DocumentLibrary);
+                }
+
+                // Add files to the list
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    var sw = new StreamWriter(ms, System.Text.Encoding.Unicode);
+                    try
+                    {
+                        sw.Write("Lorem ipsum");
+                        sw.Flush();
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            myList.RootFolder.Files.Add($"367664-472-E-T0{i} - Artichoke.txt", ms);
+                        }
+                    }
+                    finally
+                    {
+                        sw.Dispose();
+                    }
+                }
+
+
+                var result = myList.FindFiles("367664-472-E-T00*");
+                Assert.IsTrue(result.Count == 1);
+
+                result = myList.FindFiles("367664-472-E-*");
+                Assert.IsTrue(result.Count == 5);
+
+                result = myList.FindFiles("*T04*");
+                Assert.IsTrue(result.Count == 1);
+
+                result = myList.FindFiles("*- Artichoke.txt");
+                Assert.IsTrue(result.Count == 5);
+            }
+        }
+        [TestMethod]
+        public async Task FindFilesInSubfolders()
+        {
+            //TODO: Implement
+
+            //TestCommon.Instance.Mocking = false;
+
+            throw new NotImplementedException();
         }
     }
 }

@@ -724,6 +724,18 @@ namespace PnP.Core.Model.SharePoint
         /// </summary>
         /// <returns>Ordered list of content type id's, returns null when the list is not enabled to use content types</returns>
         List<string> GetContentTypeOrder();
+
+        /// <summary>
+        /// Find files in the list, can be slow
+        /// </summary>
+        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        List<IFile> FindFiles(string match);
+
+        /// <summary>
+        /// Find files in the list, can be slow
+        /// </summary>
+        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        Task<List<IFile>> FindFilesAsync(string match);
         #endregion
     }
 }
