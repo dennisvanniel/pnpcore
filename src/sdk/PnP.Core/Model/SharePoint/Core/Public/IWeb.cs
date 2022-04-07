@@ -1105,6 +1105,21 @@ namespace PnP.Core.Model.SharePoint
         IBatchSingleResult<ISearchResult> SearchBatch(Batch batch, SearchOptions query);
         #endregion
 
+        #region Files
+        /// <summary>
+        /// Find files in the web, can be slow
+        /// </summary>
+        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        Task<List<IFile>> FindFilesAsync(string match);
+
+        /// <summary>
+        /// Find files in the web, can be slow
+        /// </summary>
+        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        List<IFile> FindFiles(string match);
+
+        #endregion
+
         #endregion
 
         #region TO IMPLEMENT

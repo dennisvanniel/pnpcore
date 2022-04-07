@@ -1362,42 +1362,12 @@ namespace PnP.Core.Model.SharePoint
 
         public List<IFile> FindFiles(string match)
         {
-            return FindFilesAsync(match).GetAwaiter().GetResult();
+            return Task.Run(() => FindFilesAsync(match)).GetAwaiter().GetResult();
         }
 
         public async Task<List<IFile>> FindFilesAsync(string match)
         {
-
-            match = WildcardToRegex(match);
-
-            return await ParseFiles(RootFolder, match).ConfigureAwait(false);
-        }
-
-        private static string WildcardToRegex(string pattern)
-        {
-            return "^" + Regex.Escape(pattern).
-                               Replace(@"\*", ".*").
-                               Replace(@"\?", ".") + "$";
-        }
-
-        private async Task<List<IFile>> ParseFiles(IFolder folder, string match)
-        {
-            var foundFiles = new List<IFile>();
-            IFileCollection files = folder.Files;
-
-            foreach (File file in files)
-            {
-                if (Regex.IsMatch(file.Name, match, RegexOptions.IgnoreCase))
-                {
-                    foundFiles.Add(file);
-                }
-            }
-
-            foreach (IFolder subfolder in folder.Folders)
-            {
-                foundFiles.AddRange(await ParseFiles(subfolder, match).ConfigureAwait(false));
-            }
-            return foundFiles;
+            return await RootFolder.FindFilesAsync(match).ConfigureAwait(false);
         }
 
         #endregion

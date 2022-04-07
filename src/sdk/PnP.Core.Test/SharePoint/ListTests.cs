@@ -1615,9 +1615,9 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFilesInRootFolder()
+        public async Task FindFilesTest()
         {
-            TestCommon.Instance.Mocking = false;
+            //TestCommon.Instance.Mocking = false;
 
             using (var context = await TestCommon.Instance.GetContextAsync(TestCommon.TestSite))
             {
@@ -1641,13 +1641,25 @@ namespace PnP.Core.Test.SharePoint
                     var sw = new StreamWriter(ms, System.Text.Encoding.Unicode);
                     try
                     {
-                        sw.Write("Lorem ipsum");
+                        sw.Write("[Your name here]");
                         sw.Flush();
                         ms.Seek(0, SeekOrigin.Begin);
 
                         for (int i = 0; i < 5; i++)
                         {
                             myList.RootFolder.Files.Add($"367664-472-E-T0{i} - Artichoke.txt", ms);
+                        }
+
+                        var subfolder = myList.RootFolder.AddFolder("subfolder");
+                        for (int i = 0; i < 3; i++)
+                        {
+                            subfolder.Files.Add($"99887-543-F-R0{i} - Courgette.txt", ms);
+                        }
+
+                        var subsubfolder = subfolder.AddFolder("subsubfolder");
+                        for (int i = 0; i < 2; i++)
+                        {
+                            subsubfolder.Files.Add($"872374-522-G-X0{i} - Cucumber.txt", ms);
                         }
                     }
                     finally
@@ -1656,28 +1668,32 @@ namespace PnP.Core.Test.SharePoint
                     }
                 }
 
+                var result1 = myList.FindFiles("367664-472-E-T00*");
+                Assert.IsTrue(result1.Count == 1);
 
-                var result = myList.FindFiles("367664-472-E-T00*");
-                Assert.IsTrue(result.Count == 1);
+                var result2 = myList.FindFiles("367664-472-E-*");
+                Assert.IsTrue(result2.Count == 5);
 
-                result = myList.FindFiles("367664-472-E-*");
-                Assert.IsTrue(result.Count == 5);
+                var result3 = myList.FindFiles("*T04*");
+                Assert.IsTrue(result3.Count == 1);
 
-                result = myList.FindFiles("*T04*");
-                Assert.IsTrue(result.Count == 1);
+                var result4 = myList.FindFiles("*- Artichoke.txt");
+                Assert.IsTrue(result4.Count == 5);
 
-                result = myList.FindFiles("*- Artichoke.txt");
-                Assert.IsTrue(result.Count == 5);
+                var result5 = myList.FindFiles("*NODOCUMENTS*");
+                Assert.IsTrue(result5.Count == 0);
+
+                var result6 = myList.FindFiles("*");
+                Assert.IsTrue(result6.Count == 18); // more files than added by the test. Also returns default sharepoint files like ./Forms/DispForm.aspx
+                    
+                var result7 = myList.FindFiles("*courgette.txt");
+                Assert.IsTrue(result7.Count == 3);
+
+                var result8 = myList.FindFiles("*cucumber.txt");
+                Assert.IsTrue(result8.Count == 2);
+
+                await myList.DeleteAsync();
             }
-        }
-        [TestMethod]
-        public async Task FindFilesInSubfolders()
-        {
-            //TODO: Implement
-
-            //TestCommon.Instance.Mocking = false;
-
-            throw new NotImplementedException();
         }
     }
 }

@@ -7,7 +7,7 @@ PS C:\> .\cleantestenv.ps1
 #>
 
 # Tenant name 
-$tenantName = "" #e.g. contoso
+$tenantName = "dennisvanniel" #e.g. contoso
 # If you use credential manager then specify the used credential manager entry, if left blank you'll be asked for a user/pwd
 $credentialManagerCredentialToUse = ""
 
@@ -94,6 +94,7 @@ Remove-PnPList -Identity "TestQueryListsUpdateConsistency - Updated" -Force
 Remove-PnPList -Identity "TestQueryListsUpdateConsistency - Updated" -Force
 Remove-PnPList -Identity "TestQueryListsUpdateConsistency - Updated" -Force
 Remove-PnPList -Identity UpdateOverwriteVersionBatch -Force
+Remove-PnPList -Identity FindFilesTest -Force
 
 $lists = Get-PnPList
 foreach($list in $lists)

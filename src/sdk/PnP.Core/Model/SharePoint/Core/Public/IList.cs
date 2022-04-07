@@ -736,6 +736,7 @@ namespace PnP.Core.Model.SharePoint
         /// </summary>
         /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
         Task<List<IFile>> FindFilesAsync(string match);
+
         #endregion
     }
 }

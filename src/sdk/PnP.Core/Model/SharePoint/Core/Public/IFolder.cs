@@ -1,5 +1,6 @@
 using PnP.Core.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -275,6 +276,21 @@ namespace PnP.Core.Model.SharePoint
         /// </summary>
         /// <returns>Information about the created classify and extract requests</returns>
         ISyntexClassifyAndExtractResult ClassifyAndExtractOffPeak();
+
+        #endregion
+
+        #region Files
+        /// <summary>
+        /// Find files in the list, can be slow
+        /// </summary>
+        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        public Task<List<IFile>> FindFilesAsync(string match);
+
+        /// <summary>
+        /// Find files in the list, can be slow
+        /// </summary>
+        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        public List<IFile> FindFiles(string match);
 
         #endregion
     }
