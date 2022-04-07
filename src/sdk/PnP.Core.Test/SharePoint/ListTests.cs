@@ -1622,7 +1622,7 @@ namespace PnP.Core.Test.SharePoint
             using (var context = await TestCommon.Instance.GetContextAsync(TestCommon.TestSite))
             {
                 // Create a new list
-                string listTitle = TestCommon.GetPnPSdkTestAssetName("FindFilesTest");
+                string listTitle = TestCommon.GetPnPSdkTestAssetName("FindFilesTest_LIST");
                 var myList = context.Web.Lists.GetByTitle(listTitle);
 
                 if (TestCommon.Instance.Mocking && myList != null)
@@ -1677,19 +1677,19 @@ namespace PnP.Core.Test.SharePoint
                 var result3 = myList.FindFiles("*T04*");
                 Assert.IsTrue(result3.Count == 1);
 
-                var result4 = myList.FindFiles("*- Artichoke.txt");
+                var result4 = myList.FindFiles("*- ArtiChoKE.txt");
                 Assert.IsTrue(result4.Count == 5);
 
                 var result5 = myList.FindFiles("*NODOCUMENTS*");
                 Assert.IsTrue(result5.Count == 0);
 
                 var result6 = myList.FindFiles("*");
-                Assert.IsTrue(result6.Count == 18); // more files than added by the test. Also returns default sharepoint files like ./Forms/DispForm.aspx
+                Assert.IsTrue(result6.Count > 10); // more files than the 10 added by the test. Also returns default sharepoint files like ./Forms/DispForm.aspx
                     
-                var result7 = myList.FindFiles("*courgette.txt");
+                var result7 = myList.FindFiles("*courgETte.txt");
                 Assert.IsTrue(result7.Count == 3);
 
-                var result8 = myList.FindFiles("*cucumber.txt");
+                var result8 = myList.FindFiles("*cucuMber.txT");
                 Assert.IsTrue(result8.Count == 2);
 
                 await myList.DeleteAsync();
