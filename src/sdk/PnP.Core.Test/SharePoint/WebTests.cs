@@ -1089,12 +1089,12 @@ namespace PnP.Core.Test.SharePoint
                 var currentRoleDefinitions = addedUser.GetRoleDefinitions();
 
                 Assert.IsNotNull(currentRoleDefinitions.AsRequested().FirstOrDefault(p => p.Name == "Full Control"));
-                
+
                 addedUser.RemoveRoleDefinitions(new string[] { "Full Control" });
 
                 currentRoleDefinitions = addedUser.GetRoleDefinitions();
 
-                Assert.IsTrue(currentRoleDefinitions == null);                
+                Assert.IsTrue(currentRoleDefinitions == null);
             }
         }
 
@@ -1535,7 +1535,7 @@ namespace PnP.Core.Test.SharePoint
                 Assert.IsTrue(searchResult.TotalRows > 0);
                 Assert.IsTrue(searchResult.TotalRowsIncludingDuplicates > 0);
                 Assert.IsTrue(searchResult.Rows.Count == 10);
-                foreach(var row in searchResult.Rows)
+                foreach (var row in searchResult.Rows)
                 {
                     Assert.IsTrue(row.ContainsKey("Path"));
                 }
@@ -1633,10 +1633,10 @@ namespace PnP.Core.Test.SharePoint
                 Assert.IsTrue(searchResult.TotalRowsIncludingDuplicates > 0);
                 Assert.IsTrue(searchResult.Rows.Count == 10);
                 Assert.IsTrue(searchResult.Refinements.Count > 0);
-                foreach(var refiner in searchResult.Refinements)
+                foreach (var refiner in searchResult.Refinements)
                 {
                     Assert.IsTrue(!string.IsNullOrEmpty(refiner.Key));
-                    foreach(var refinementResult in refiner.Value)
+                    foreach (var refinementResult in refiner.Value)
                     {
                         Assert.IsTrue(refinementResult.Count > 0);
                         Assert.IsTrue(!string.IsNullOrEmpty(refinementResult.Value));
@@ -1644,19 +1644,19 @@ namespace PnP.Core.Test.SharePoint
                         Assert.IsTrue(!string.IsNullOrEmpty(refinementResult.Name));
                     }
                 }
-                
+
             }
         }
 
         [TestMethod]
-        public async Task FindFilesTest()
+        public async Task FindFilesAsyncTest()
         {
-            TestCommon.Instance.Mocking = false;
+            //TestCommon.Instance.Mocking = false;
 
             using (var context = TestCommon.Instance.GetContext(TestCommon.TestSite))
             {
                 // Create new lists
-                string list1Title = TestCommon.GetPnPSdkTestAssetName("FindFilesTest1_WEB");
+                string list1Title = TestCommon.GetPnPSdkTestAssetName("FindFilesAsyncTest1_WEB");
                 var myList1 = context.Web.Lists.GetByTitle(list1Title);
 
                 if (TestCommon.Instance.Mocking && myList1 != null)
@@ -1669,7 +1669,7 @@ namespace PnP.Core.Test.SharePoint
                     myList1 = await context.Web.Lists.AddAsync(list1Title, ListTemplateType.DocumentLibrary);
                 }
 
-                string list2Title = TestCommon.GetPnPSdkTestAssetName("FindFilesTest2_WEB");
+                string list2Title = TestCommon.GetPnPSdkTestAssetName("FindFilesAsyncTest2_WEB");
                 var myList2 = context.Web.Lists.GetByTitle(list2Title);
 
                 if (TestCommon.Instance.Mocking && myList2 != null)
@@ -1683,7 +1683,7 @@ namespace PnP.Core.Test.SharePoint
                 }
 
                 // Add files to the lists
-                using (MemoryStream ms = new MemoryStream())
+                using (MemoryStream ms = new())
                 {
                     var sw = new StreamWriter(ms, System.Text.Encoding.Unicode);
                     try
@@ -1715,14 +1715,61 @@ namespace PnP.Core.Test.SharePoint
                     }
                 }
 
-                var result = context.Web.FindFiles("*ArTicHoke*");
+                var result = await context.Web.FindFilesAsync("*ArTicHoke*");
                 Assert.IsTrue(result.Count == 7);
 
-                var result2 = context.Web.FindFiles("*F-T01*");
+                var result2 = await context.Web.FindFilesAsync("*F-T01*");
                 Assert.IsTrue(result2.Count == 2);
 
                 await myList1.DeleteAsync();
                 await myList2.DeleteAsync();
+            }
+        }
+
+        [TestMethod]
+        public async Task FindFilesTest()
+        {
+            //TestCommon.Instance.Mocking = false;
+
+            using (var context = TestCommon.Instance.GetContext(TestCommon.TestSite))
+            {
+                // Create new lists
+                string listTitle = TestCommon.GetPnPSdkTestAssetName("FindFilesTest_WEB");
+                var myList = context.Web.Lists.GetByTitle(listTitle);
+
+                if (TestCommon.Instance.Mocking && myList != null)
+                {
+                    Assert.Inconclusive("Test data set should be setup to not have the list available.");
+                }
+
+                if (myList == null)
+                {
+                    myList = await context.Web.Lists.AddAsync(listTitle, ListTemplateType.DocumentLibrary);
+                }
+
+                // Add file to the list
+                using (MemoryStream ms = new())
+                {
+                    var sw = new StreamWriter(ms, System.Text.Encoding.Unicode);
+                    try
+                    {
+                        sw.Write("[Your name here]");
+                        sw.Flush();
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        myList.RootFolder.Files.Add($"367664-472-E-X01 - Artichoke.txt", ms);
+
+                    }
+                    finally
+                    {
+                        sw.Dispose();
+                    }
+                }
+
+                var result = context.Web.FindFiles("*E-x01*");
+                Assert.IsTrue(result.Count == 1);
+
+                await myList.DeleteAsync();
             }
         }
     }

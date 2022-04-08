@@ -1615,14 +1615,14 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFilesTest()
+        public async Task FindFilesAsyncTest()
         {
             //TestCommon.Instance.Mocking = false;
 
             using (var context = await TestCommon.Instance.GetContextAsync(TestCommon.TestSite))
             {
                 // Create a new list
-                string listTitle = TestCommon.GetPnPSdkTestAssetName("FindFilesTest_LIST");
+                string listTitle = TestCommon.GetPnPSdkTestAssetName("FindFilesAsyncTest_LIST");
                 var myList = context.Web.Lists.GetByTitle(listTitle);
 
                 if (TestCommon.Instance.Mocking && myList != null)
@@ -1636,7 +1636,7 @@ namespace PnP.Core.Test.SharePoint
                 }
 
                 // Add files to the list
-                using (MemoryStream ms = new MemoryStream())
+                using (MemoryStream ms = new())
                 {
                     var sw = new StreamWriter(ms, System.Text.Encoding.Unicode);
                     try
@@ -1668,29 +1668,77 @@ namespace PnP.Core.Test.SharePoint
                     }
                 }
 
-                var result1 = myList.FindFiles("367664-472-E-T00*");
+                var result1 = await myList.FindFilesAsync("367664-472-E-T00*");
                 Assert.IsTrue(result1.Count == 1);
 
-                var result2 = myList.FindFiles("367664-472-E-*");
+                var result2 = await myList.FindFilesAsync("367664-472-E-*");
                 Assert.IsTrue(result2.Count == 5);
 
-                var result3 = myList.FindFiles("*T04*");
+                var result3 = await myList.FindFilesAsync("*T04*");
                 Assert.IsTrue(result3.Count == 1);
 
-                var result4 = myList.FindFiles("*- ArtiChoKE.txt");
+                var result4 = await myList.FindFilesAsync("*- ArtiChoKE.txt");
                 Assert.IsTrue(result4.Count == 5);
 
-                var result5 = myList.FindFiles("*NODOCUMENTS*");
+                var result5 = await myList.FindFilesAsync("*NODOCUMENTS*");
                 Assert.IsTrue(result5.Count == 0);
 
-                var result6 = myList.FindFiles("*");
-                Assert.IsTrue(result6.Count > 10); // more files than the 10 added by the test. Also returns default sharepoint files like ./Forms/DispForm.aspx
-                    
-                var result7 = myList.FindFiles("*courgETte.txt");
+                var result6 = await myList.FindFilesAsync("*");
+                Assert.IsTrue(result6.Count > 1); //just testing if the single asteriks works, should return more than one
+                                                  //also returns default sp file so count may vary per environment
+
+                var result7 = await myList.FindFilesAsync("*courgETte.txt");
                 Assert.IsTrue(result7.Count == 3);
 
-                var result8 = myList.FindFiles("*cucuMber.txT");
+                var result8 = await myList.FindFilesAsync("*cucuMber.txT");
                 Assert.IsTrue(result8.Count == 2);
+
+                await myList.DeleteAsync();
+            }
+        }
+
+        [TestMethod]
+        public async Task FindFilesTest()
+        {
+            //TestCommon.Instance.Mocking = false;
+
+            using (var context = await TestCommon.Instance.GetContextAsync(TestCommon.TestSite))
+            {
+                // Create a new list
+                string listTitle = TestCommon.GetPnPSdkTestAssetName("FindFilesTest_LIST");
+                var myList = context.Web.Lists.GetByTitle(listTitle);
+
+                if (TestCommon.Instance.Mocking && myList != null)
+                {
+                    Assert.Inconclusive("Test data set should be setup to not have the list available.");
+                }
+
+                if (myList == null)
+                {
+                    myList = await context.Web.Lists.AddAsync(listTitle, ListTemplateType.DocumentLibrary);
+                }
+
+                // Add file to the list
+                using (MemoryStream ms = new())
+                {
+                    var sw = new StreamWriter(ms, System.Text.Encoding.Unicode);
+                    try
+                    {
+                        sw.Write("[Your name here]");
+                        sw.Flush();
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        myList.RootFolder.Files.Add($"367664-472-E-S01 - Artichoke.txt", ms);
+
+                    }
+                    finally
+                    {
+                        sw.Dispose();
+                    }
+                }
+
+                var result = myList.FindFiles("*E-s01*");
+                Assert.IsTrue(result.Count == 1);
 
                 await myList.DeleteAsync();
             }
