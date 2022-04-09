@@ -283,13 +283,13 @@ namespace PnP.Core.Model.SharePoint
         /// <summary>
         /// Find files in the list, can be slow
         /// </summary>
-        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        /// <returns>A <see cref="List{T}"/> of found files as type <see cref="IFile"/></returns>
         public Task<List<IFile>> FindFilesAsync(string match);
 
         /// <summary>
         /// Find files in the list, can be slow
         /// </summary>
-        /// <returns>A list with the found files in an <see cref="IFileCollection">object</see></returns>
+        /// <returns>A <see cref="List{T}"/> of found files as type <see cref="IFile"/></returns>
         public List<IFile> FindFiles(string match);
 
         #endregion
