@@ -1615,7 +1615,7 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFileAsyncTest()
+        public async Task FindFilesAsyncTest()
         {
             //TestCommon.Instance.Mocking = false;
 
@@ -1668,29 +1668,29 @@ namespace PnP.Core.Test.SharePoint
                     }
                 }
 
-                var result1 = await myList.FindFileAsync("367664-472-E-T00*");
+                var result1 = await myList.FindFilesAsync("367664-472-E-T00*");
                 Assert.IsTrue(result1.Count == 1);
 
-                var result2 = await myList.FindFileAsync("367664-472-E-*");
+                var result2 = await myList.FindFilesAsync("367664-472-E-*");
                 Assert.IsTrue(result2.Count == 5);
 
-                var result3 = await myList.FindFileAsync("*T04*");
+                var result3 = await myList.FindFilesAsync("*T04*");
                 Assert.IsTrue(result3.Count == 1);
 
-                var result4 = await myList.FindFileAsync("*- ArtiChoKE.txt");
+                var result4 = await myList.FindFilesAsync("*- ArtiChoKE.txt");
                 Assert.IsTrue(result4.Count == 5);
 
-                var result5 = await myList.FindFileAsync("*NODOCUMENTS*");
+                var result5 = await myList.FindFilesAsync("*NODOCUMENTS*");
                 Assert.IsTrue(result5.Count == 0);
 
-                var result6 = await myList.FindFileAsync("*");
+                var result6 = await myList.FindFilesAsync("*");
                 Assert.IsTrue(result6.Count > 1); //just testing if the single asteriks works, should return more than one
                                                   //also returns default sp file so count may vary per environment
 
-                var result7 = await myList.FindFileAsync("*courgETte.txt");
+                var result7 = await myList.FindFilesAsync("*courgETte.txt");
                 Assert.IsTrue(result7.Count == 3);
 
-                var result8 = await myList.FindFileAsync("*cucuMber.txT");
+                var result8 = await myList.FindFilesAsync("*cucuMber.txT");
                 Assert.IsTrue(result8.Count == 2);
 
                 await myList.DeleteAsync();
@@ -1698,7 +1698,7 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFileTest()
+        public async Task FindFilesTest()
         {
             //TestCommon.Instance.Mocking = false;
 
@@ -1737,7 +1737,7 @@ namespace PnP.Core.Test.SharePoint
                     }
                 }
 
-                var result = myList.FindFile("*E-s01*");
+                var result = myList.FindFiles("*E-s01*");
                 Assert.IsTrue(result.Count == 1);
 
                 await myList.DeleteAsync();

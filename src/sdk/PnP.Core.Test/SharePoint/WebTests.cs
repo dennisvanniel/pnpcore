@@ -1649,7 +1649,7 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFileAsyncTest()
+        public async Task FindFilesAsyncTest()
         {
             //TestCommon.Instance.Mocking = false;
 
@@ -1715,10 +1715,10 @@ namespace PnP.Core.Test.SharePoint
                     }
                 }
 
-                var result = await context.Web.FindFileAsync("*ArTicHoke*");
+                var result = await context.Web.FindFilesAsync("*ArTicHoke*");
                 Assert.IsTrue(result.Count == 7);
 
-                var result2 = await context.Web.FindFileAsync("*F-T01*");
+                var result2 = await context.Web.FindFilesAsync("*F-T01*");
                 Assert.IsTrue(result2.Count == 2);
 
                 await myList1.DeleteAsync();
@@ -1727,7 +1727,7 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFileTest()
+        public async Task FindFilesTest()
         {
             //TestCommon.Instance.Mocking = false;
 
@@ -1766,7 +1766,7 @@ namespace PnP.Core.Test.SharePoint
                     }
                 }
 
-                var result = context.Web.FindFile("*E-x01*");
+                var result = context.Web.FindFiles("*E-x01*");
                 Assert.IsTrue(result.Count == 1);
 
                 await myList.DeleteAsync();
