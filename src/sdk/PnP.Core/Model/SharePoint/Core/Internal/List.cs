@@ -1360,12 +1360,12 @@ namespace PnP.Core.Model.SharePoint
 
         #region Files
 
-        public List<IFile> FindFiles(string match)
+        public List<IFile> FindFile(string match)
         {
-            return Task.Run(() => FindFilesAsync(match)).GetAwaiter().GetResult();
+            return Task.Run(() => FindFileAsync(match)).GetAwaiter().GetResult();
         }
 
-        public async Task<List<IFile>> FindFilesAsync(string match)
+        public async Task<List<IFile>> FindFileAsync(string match)
         {
             return await RootFolder.FindFilesAsync(match).ConfigureAwait(false);
         }
