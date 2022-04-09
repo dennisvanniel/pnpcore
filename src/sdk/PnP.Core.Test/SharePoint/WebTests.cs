@@ -1649,7 +1649,7 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFilesAsyncTest()
+        public async Task FindFileAsyncTest()
         {
             //TestCommon.Instance.Mocking = false;
 
@@ -1727,7 +1727,7 @@ namespace PnP.Core.Test.SharePoint
         }
 
         [TestMethod]
-        public async Task FindFilesTest()
+        public async Task FindFileTest()
         {
             //TestCommon.Instance.Mocking = false;
 
