@@ -65,7 +65,6 @@ namespace PnP.Core.Services
 
                     if (retryCount >= MaxRetries)
                     {
-
                         // Drain response content to free connections. Need to perform this
                         // before retry attempt and before the TooManyRetries ServiceException.
                         if (response.Content != null)
